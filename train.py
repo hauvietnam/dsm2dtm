@@ -30,7 +30,7 @@ def train_loop(dataloader, model, criterion, optimizer, device):
     print(f"Train Loss: {avg_loss:.4f}")
 
 if __name__ == "__main__":
-    dataset_root = r"D:\datn\research\datasets\datasets"  # chỉ cần folder data, ví dụ "./dataset"
+    dataset_root = "/kaggle/input/dsm2dtm/datasets"  # chỉ cần folder data, ví dụ "./dataset"
     batch_size = 8
     patch_size = 256
     num_epochs = 10
