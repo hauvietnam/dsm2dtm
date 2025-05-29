@@ -38,7 +38,14 @@ if __name__ == "__main__":
     nodata_threshold = 0.1
     number_of_classes = 2  # chỉnh số lớp theo dữ liệu
 
+    # Kiểm tra thiết bị, ưu tiên CUDA nếu có
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    if device.type == 'cuda':
+        print(f"CUDA device name: {torch.cuda.get_device_name(device)}")
+        print(f"CUDA capability: {torch.cuda.get_device_capability(device)}")
+        print(f"CUDA current device index: {torch.cuda.current_device()}")
 
     dataloader = get_dataloader(
         dataset_root,
@@ -52,7 +59,7 @@ if __name__ == "__main__":
     backbone_config = ConvNextConfig(out_features=["stage1", "stage2", "stage3", "stage4"])
     config = UperNetConfig(backbone_config=backbone_config, num_labels=number_of_classes)
     model = UperNetForSemanticSegmentation(config)
-    model.to(device)
+    model.to(device)  # Chuyển model lên GPU hoặc CPU
 
     criterion = CrossEntropyLoss(ignore_index=255)
     optimizer = AdamW(model.parameters(), lr=5e-5)
