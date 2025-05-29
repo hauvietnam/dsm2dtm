@@ -101,3 +101,32 @@ def get_dataloader(root_dir, batch_size=8, patch_size=256, nodata_val=-9999, nod
         pin_memory=True
     )
     return dataloader
+def get_train_val_dataloaders(root_dir, batch_size=8, patch_size=256, nodata_val=-9999, nodata_threshold=0.1, val_split=0.2, num_workers=4):
+    dataset = DSMPatchFolderDataset(
+        root_dir,
+        patch_size=patch_size,
+        nodata_val=nodata_val,
+        nodata_threshold=nodata_threshold
+    )
+
+    total_len = len(dataset)
+    val_len = int(total_len * val_split)
+    train_len = total_len - val_len
+
+    train_dataset, val_dataset = random_split(dataset, [train_len, val_len])
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+    return train_loader, val_loader
