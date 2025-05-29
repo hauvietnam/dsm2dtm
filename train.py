@@ -128,7 +128,7 @@ if __name__ == "__main__":
     dataset_root = "/kaggle/input/dsm2dtm/datasets"
     batch_size = 8
     patch_size = 256
-    num_epochs = 10
+    num_epochs = 200
     nodata_val = -9999
     nodata_threshold = 0.1
     number_of_classes = 2
