@@ -1,0 +1,27 @@
+# Dataset directories
+datasets/
+datasets_split/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Model outputs
+pretrain/
+results/
+pred_masks/
+
+# Large files
+*.zip
+*.tif
+*.tiff
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

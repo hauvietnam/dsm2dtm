@@ -34,14 +34,15 @@ def validate_loop(dataloader, model, criterion, device):
     return avg_loss, accuracy
 
 if __name__ == "__main__":
-    dataset_root = "path_to_val_dataset"  # đường dẫn folder validation
+    dataset_root = "datasets"  # Updated path for local dataset
     batch_size = 8
     patch_size = 256
     nodata_val = -9999
     nodata_threshold = 0.1
-    number_of_classes = 5  # chỉnh lại số lớp của bạn
+    number_of_classes = 2  # Fixed number of classes
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
 
     val_dataloader = get_dataloader(
         dataset_root,
@@ -49,18 +50,19 @@ if __name__ == "__main__":
         patch_size=patch_size,
         nodata_val=nodata_val,
         nodata_threshold=nodata_threshold,
-        num_workers=4
+        num_workers=2  # Reduced for Windows compatibility
     )
 
     backbone_config = ConvNextConfig(out_features=["stage1", "stage2", "stage3", "stage4"])
     config = UperNetConfig(backbone_config=backbone_config, num_labels=number_of_classes)
     model = UperNetForSemanticSegmentation(config)
 
-    # Load checkpoint đã train xong
-    model_path = "upernet_convnext_trained_model"
-    model.from_pretrained(model_path)
+    # Load checkpoint from pretrain directory
+    model_path = "pretrain"
+    model = model.from_pretrained(model_path)
     model.to(device)
 
     criterion = CrossEntropyLoss(ignore_index=255)
 
+    print("Starting validation...")
     validate_loop(val_dataloader, model, criterion, device)

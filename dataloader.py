@@ -2,7 +2,8 @@ import os
 import numpy as np
 import rasterio
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split
+from utils import normalize_patch, calculate_patch_positions, is_valid_patch
 
 class DSMPatchFolderDataset(Dataset):
     def __init__(self, root_dir, patch_size=256, nodata_val=-9999, nodata_threshold=0.1, transforms=None):
@@ -34,31 +35,14 @@ class DSMPatchFolderDataset(Dataset):
             with rasterio.open(image_path) as src:
                 img = src.read(1)
             H, W = img.shape
-            ps = self.patch_size
-
-            # Tính list vị trí i (hàng) cho patch, cho phép overlap patch cuối
-            i_positions = []
-            i = 0
-            while i + ps <= H:
-                i_positions.append(i)
-                i += ps
-            if len(i_positions) == 0 or i_positions[-1] + ps < H:
-                i_positions.append(H - ps)
-
-            # Tương tự cho j (cột)
-            j_positions = []
-            j = 0
-            while j + ps <= W:
-                j_positions.append(j)
-                j += ps
-            if len(j_positions) == 0 or j_positions[-1] + ps < W:
-                j_positions.append(W - ps)
+            
+            # Use shared utility for consistent patch positioning
+            i_positions, j_positions = calculate_patch_positions(H, W, self.patch_size)
 
             for i_pos in i_positions:
                 for j_pos in j_positions:
-                    patch = img[i_pos:i_pos+ps, j_pos:j_pos+ps]
-                    nodata_ratio = np.sum(patch == self.nodata_val) / (ps * ps)
-                    if nodata_ratio < self.nodata_threshold:
+                    patch = img[i_pos:i_pos+self.patch_size, j_pos:j_pos+self.patch_size]
+                    if is_valid_patch(patch, self.nodata_val, self.nodata_threshold):
                         self.patch_index.append((file_idx, i_pos, j_pos))
         print(f"Tạo index patch xong, tổng số patch: {len(self.patch_index)}")
 
@@ -75,9 +59,9 @@ class DSMPatchFolderDataset(Dataset):
             img = src_img.read(1)[top:top+self.patch_size, left:left+self.patch_size]
             mask = src_mask.read(1)[top:top+self.patch_size, left:left+self.patch_size]
 
-        img = np.where(img == self.nodata_val, 0, img)
-        img = (img - img.min()) / (img.max() - img.min() + 1e-6)
-
+        # Use shared normalization function
+        img = normalize_patch(img, self.nodata_val)
+        
         img_tensor = torch.tensor(img, dtype=torch.float32).unsqueeze(0).repeat(3,1,1)
         mask_tensor = torch.tensor(mask, dtype=torch.long)
 
