@@ -140,7 +140,7 @@ if __name__ == "__main__":
     # Environment-specific configurations
     if os.path.exists("/kaggle"):
         # Kaggle environment
-        dataset_root = "/kaggle/input/dsm2dtm-split/datasets_split"
+        dataset_root = "/kaggle/input/dsm2dtm/datasets_split"
         output_dir = "/kaggle/working"
         num_workers = 4
         batch_size = 16  # Larger batch for Kaggle GPUs
